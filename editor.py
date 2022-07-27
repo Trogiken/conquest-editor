@@ -16,9 +16,33 @@ class Terminal:
         ----------------------------------------------------------------------------
         """
 
-    def refresh(self):
+    def refresh(self, add=''):
         system('cls')
         print(self.splash)
+        save = Save()
+
+        h = save.load()
+
+        for p_id, p_info in h[1].items():
+            if p_id == 0:
+                team = 'Eagle'
+            else:
+                team = 'Raven'
+
+            print(f"\t{team}:\n"
+                  f"\t\tGain:\n\t\t\tCoins:{p_info['g_coins']}\n\t\t\tResearch:{p_info['g_research']}\n"
+                  f"\t\tAvailable:\n\t\t\tCoins:{p_info['c_coins']}\n\t\t\tResearch:{p_info['c_research']}")
+
+        print("\n\tTiles:")
+        for f in h[0]:
+            owner = h[0][f]['owner']
+            if owner == '0':
+                occ = 'Eagle'
+            elif owner == '1':
+                occ = 'Raven'
+            else:
+                occ = 'None'
+            print(f"\t\t{f}:{occ}\n\t\t\tBattalions: {h[0][f]['battalions']}")
 
 
 class Save:
@@ -90,30 +114,6 @@ class Save:
 def main():
     cmd = Terminal()
     cmd.refresh()
-    save = Save()
-
-    h = save.load()
-
-    for p_id, p_info in h[1].items():
-        if p_id == 0:
-            team = 'Eagle'
-        else:
-            team = 'Raven'
-
-        print(f"\t{team}:\n"
-              f"\t\tGain:\n\t\t\tCoins:{p_info['g_coins']}\n\t\t\tResearch:{p_info['g_research']}\n"
-              f"\t\tAvailable:\n\t\t\tCoins:{p_info['c_coins']}\n\t\t\tResearch:{p_info['c_research']}")
-
-    print("\n\tTiles:")
-    for f in h[0]:
-        owner = h[0][f]['owner']
-        if owner == '1':
-            occ = 'Red'
-        elif owner == '0':
-            occ = 'Blue'
-        else:
-            occ = 'None'
-        print(f"\t\t{f}:{occ}\n\t\t\tBattalions: {h[0][f]['battalions']}")
 
 
 if __name__ == '__main__':
