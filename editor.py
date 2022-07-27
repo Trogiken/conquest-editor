@@ -1,8 +1,9 @@
 from os import getenv, path, system
 from xml.etree import ElementTree
 from pathlib import Path
-# n.text = str(int(10))  # if you can identify them use n.text to change the value of the specific <int\>
+# n.text = str(int(10))
 # self.dom.write(self.save)
+
 
 class Terminal:
     def __init__(self):
@@ -16,7 +17,7 @@ class Terminal:
         ----------------------------------------------------------------------------
         """
 
-    def refresh(self, add=''):
+    def refresh(self):
         system('cls')
         print(self.splash)
         save = Save()
