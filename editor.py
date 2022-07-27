@@ -1,7 +1,8 @@
 from os import getenv, path, system
 from xml.etree import ElementTree
 from pathlib import Path
-
+# n.text = str(int(10))  # if you can identify them use n.text to change the value of the specific <int\>
+# self.dom.write(self.save)
 
 class Terminal:
     def __init__(self):
@@ -28,63 +29,62 @@ class Save:
         self.dom = None
 
         while not path.exists(self.save):
-            self.save = input("Save not found | Enter path to Save; e.g: \\path\\to\\autosave.xml\n> ")
+            self.save = input("\tSave not found | Enter path to Save; e.g: \\path\\to\\autosave.xml\n> ")
             self.cmd.refresh()
         self.dom = ElementTree.parse(self.save)
 
     def load(self):
-        states = self.dom.findall('levels/LevelState')
-        teams = self.dom.findall('resources/ConquestTeamResources')
-
         level_data = {}
-        for c in states:
+        for c in self.dom.findall('levels/LevelState'):
             name = c.find('objectName').text
             owner = c.find('owner').text
             battalions = c.find('battalions').text
             level = {name: {'owner': owner, 'battalions': battalions}}
             level_data.update(level)
 
-        value = 1
-        for n in self.dom.iter('int'):  # DEBUG
-            if value == 1:
-                print("\tEagle:")
-                print("\t\tGain:")
-                print(f'\t\t\tBattalions: {n.text}')
-            elif value == 2:
-                print(f'\t\t\tCoins: {n.text}')
-            elif value == 3:
-                print(f'\t\t\tResearch: {n.text}')
-            elif value == 17:
-                print("\t\tAvailable:")
-                print(f'\t\t\tBattalions: {n.text}')
-            elif value == 18:
-                print(f'\t\t\tCoins: {n.text}')
-            elif value == 19:
-                print(f'\t\t\tResearch: {n.text}')
-            elif value == 33:
-                print("\tRaven:")
-                print("\t\tGain:")
-                print(f'\t\t\tBattalions: {n.text}')
-            elif value == 34:
-                print(f'\t\t\tCoins: {n.text}')
-            elif value == 35:
-                print(f'\t\t\tResearch: {n.text}')
-            elif value == 49:
-                print("\t\tAvailable:")
-                print(f'\t\t\tBattalions: {n.text}')
-            elif value == 50:
-                print(f'\t\t\tCoins: {n.text}')
-            elif value == 51:
-                print(f'\t\t\tResearch: {n.text}')
-            value += 1
-        # resource_data = {}
-        # for team in teams:
-        #     print(team)
-        #     for c in team:
-        #         print(c)
-        #         print(c.find('int').text)
+        team_data = {}
 
-        return level_data
+        eg_coins = '?'
+        eg_research = '?'
+        ec_coins = '?'
+        ec_research = '?'
+        rg_coins = '?'
+        rg_research = '?'
+        rc_coins = '?'
+        rc_research = '?'
+        value = 1
+        for n in self.dom.iter('int'):
+            if value == 1:
+                eg_coins = n.text
+            elif value == 2:
+                eg_research = n.text
+            elif value == 17:
+                ec_coins = n.text
+            elif value == 18:
+                ec_research = n.text
+            elif value == 33:
+                rg_coins = n.text
+            elif value == 34:
+                rg_research = n.text
+            elif value == 49:
+                rc_coins = n.text
+            elif value == 50:
+                rc_research = n.text
+            value += 1
+
+        team_data[0] = {}
+        team_data[1] = {}
+
+        team_data[0]['g_coins'] = eg_coins
+        team_data[0]['g_research'] = eg_research
+        team_data[0]['c_coins'] = ec_coins
+        team_data[0]['c_research'] = ec_research
+        team_data[1]['g_coins'] = rg_coins
+        team_data[1]['g_research'] = rg_research
+        team_data[1]['c_coins'] = rc_coins
+        team_data[1]['c_research'] = rc_research
+
+        return [level_data, team_data]
 
 
 def main():
@@ -94,16 +94,26 @@ def main():
 
     h = save.load()
 
+    for p_id, p_info in h[1].items():
+        if p_id == 0:
+            team = 'Eagle'
+        else:
+            team = 'Raven'
+
+        print(f"\t{team}:\n"
+              f"\t\tGain:\n\t\t\tCoins:{p_info['g_coins']}\n\t\t\tResearch:{p_info['g_research']}\n"
+              f"\t\tAvailable:\n\t\t\tCoins:{p_info['c_coins']}\n\t\t\tResearch:{p_info['c_research']}")
+
     print("\n\tTiles:")
-    for f in h:
-        owner = h[f]['owner']
+    for f in h[0]:
+        owner = h[0][f]['owner']
         if owner == '1':
             occ = 'Red'
         elif owner == '0':
             occ = 'Blue'
         else:
             occ = 'None'
-        print(f"\t\t{f}:{occ}\n\t\t\tBattalions: {h[f]['battalions']}")
+        print(f"\t\t{f}:{occ}\n\t\t\tBattalions: {h[0][f]['battalions']}")
 
 
 if __name__ == '__main__':
