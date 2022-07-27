@@ -6,8 +6,18 @@ from pathlib import Path
 
 
 class Terminal:
-    def __init__(self):
-        self.splash = r"""
+    @staticmethod
+    def refresh(opt=None):
+        """
+        Display splash and xml data at the top of terminal
+
+        Parameters
+        ----------
+        opt : str
+            if 'full', xml data will be displayed (Requires save.load() to function)
+        """
+        system('cls')
+        print(r"""
           _____                _ _              _       _____    _ _ _             
          |_   _| __ ___   __ _(_) | _____ _ __ ( )___  | ____|__| (_) |_ ___  _ __ 
            | || '__/ _ \ / _` | | |/ / _ \ '_ \|// __| |  _| / _` | | __/ _ \| '__|
@@ -15,39 +25,38 @@ class Terminal:
            |_||_|  \___/ \__, |_|_|\_\___|_| |_| |___/ |_____\__,_|_|\__\___/|_|   
                          |___/                                                     
         ----------------------------------------------------------------------------
-        """
+        """)
 
-    def refresh(self):
-        system('cls')
-        print(self.splash)
-        save = Save()
+        if opt == 'full':
+            save = Save()
 
-        h = save.load()
+            h = save.load()
 
-        for p_id, p_info in h[1].items():
-            if p_id == 0:
-                team = 'Eagle'
-            else:
-                team = 'Raven'
+            for p_id, p_info in h[1].items():
+                if p_id == 0:
+                    team = 'Eagle'
+                else:
+                    team = 'Raven'
 
-            print(f"\t{team}:\n"
-                  f"\t\tGain:\n\t\t\tCoins:{p_info['g_coins']}\n\t\t\tResearch:{p_info['g_research']}\n"
-                  f"\t\tAvailable:\n\t\t\tCoins:{p_info['c_coins']}\n\t\t\tResearch:{p_info['c_research']}")
+                print(f"\t{team}:\n"
+                      f"\t\tGain:\n\t\t\tCoins:{p_info['g_coins']}\n\t\t\tResearch:{p_info['g_research']}\n"
+                      f"\t\tAvailable:\n\t\t\tCoins:{p_info['c_coins']}\n\t\t\tResearch:{p_info['c_research']}")
 
-        print("\n\tTiles:")
-        for f in h[0]:
-            owner = h[0][f]['owner']
-            if owner == '0':
-                occ = 'Eagle'
-            elif owner == '1':
-                occ = 'Raven'
-            else:
-                occ = 'None'
-            print(f"\t\t{f}:{occ}\n\t\t\tBattalions: {h[0][f]['battalions']}")
+            print("\n\tTiles:")
+            for f in h[0]:
+                owner = h[0][f]['owner']
+                if owner == '0':
+                    occ = 'Eagle'
+                elif owner == '1':
+                    occ = 'Raven'
+                else:
+                    occ = 'None'
+                print(f"\t\t{f}:{occ}\n\t\t\tBattalions: {h[0][f]['battalions']}")
 
 
 class Save:
     def __init__(self):
+        """Constructs all necessary attributes for the Save object"""
         self.cmd = Terminal()
         self.appdata = str(Path(getenv("APPDATA")).parents[0])
         self.save = self.appdata + '\\LocalLow\\SteelRaven7\\RavenfieldSteam\\Saves\\autosave.xml'
@@ -59,13 +68,14 @@ class Save:
         self.dom = ElementTree.parse(self.save)
 
     def load(self):
-        level_data = {}
+        """Parse xml file, returns list of two dictionarys for Tile (0) and Team (1) data"""
+        tile_data = {}
         for c in self.dom.findall('levels/LevelState'):
             name = c.find('objectName').text
             owner = c.find('owner').text
             battalions = c.find('battalions').text
             level = {name: {'owner': owner, 'battalions': battalions}}
-            level_data.update(level)
+            tile_data.update(level)
 
         team_data = {}
 
@@ -109,12 +119,13 @@ class Save:
         team_data[1]['c_coins'] = rc_coins
         team_data[1]['c_research'] = rc_research
 
-        return [level_data, team_data]
+        return [tile_data, team_data]
 
 
 def main():
+    """Program Loop"""
     cmd = Terminal()
-    cmd.refresh()
+    cmd.refresh('full')
 
 
 if __name__ == '__main__':
