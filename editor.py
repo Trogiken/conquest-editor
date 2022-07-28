@@ -14,7 +14,7 @@ class Terminal:
         Parameters
         ----------
         data : list
-            if data from save.load() is given, xml data will be displayed (Requires save.load() to function)
+            if data from save.load() is given, xml data will be displayed
         """
         system('cls')
         print(r"""
