@@ -7,14 +7,14 @@ from pathlib import Path
 
 class Terminal:
     @staticmethod
-    def refresh(opt=None):
+    def refresh(data=None):
         """
         Display splash and xml data at the top of terminal
 
         Parameters
         ----------
-        opt : str
-            if 'full', xml data will be displayed (Requires save.load() to function)
+        data : list
+            if data from save.load() is given, xml data will be displayed (Requires save.load() to function)
         """
         system('cls')
         print(r"""
@@ -27,10 +27,8 @@ class Terminal:
         ----------------------------------------------------------------------------
         """)
 
-        if opt == 'full':
-            save = Save()
-
-            h = save.load()
+        if data is not None:
+            h = data
 
             for p_id, p_info in h[1].items():
                 if p_id == 0:
@@ -136,7 +134,8 @@ class Save:
 def main():
     """Program Loop"""
     cmd = Terminal()
-    cmd.refresh('full')
+    save = Save()
+    cmd.refresh(data=save.load())
 
 
 if __name__ == '__main__':
