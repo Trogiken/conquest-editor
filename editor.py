@@ -32,6 +32,8 @@ class Terminal:
 
             h = save.load()
 
+            print(h[2][0])
+
             for p_id, p_info in h[1].items():
                 if p_id == 0:
                     team = 'Eagle'
@@ -39,8 +41,9 @@ class Terminal:
                     team = 'Raven'
 
                 print(f"\t{team}:\n"
-                      f"\t\tGain:\n\t\t\tCoins:{p_info['g_coins']}\n\t\t\tResearch:{p_info['g_research']}\n"
-                      f"\t\tAvailable:\n\t\t\tCoins:{p_info['c_coins']}\n\t\t\tResearch:{p_info['c_research']}")
+                      f"\t\tGain:\n\t\t\tCoins: {p_info['g_coins']}\n\t\t\tResearch: {p_info['g_research']}\n"
+                      f"\t\tAvailable:\n\t\t\tCoins: {p_info['c_coins']}\n\t\t\tResearch: {p_info['c_research']}\n"
+                      f"\t\tTech: {', '.join(h[2][p_id])}")
 
             print("\n\tTiles:")
             for f in h[0]:
@@ -62,13 +65,13 @@ class Save:
         self.save = self.appdata + '\\LocalLow\\SteelRaven7\\RavenfieldSteam\\Saves\\autosave.xml'
         self.dom = None
 
-        while not path.exists(self.save):
+        while not path.exists(self.save):  # DEBUG: Make sure file is real and doesn't just exist
             self.save = input("\tSave not found | Enter path to Save; e.g: \\path\\to\\autosave.xml\n> ")
             self.cmd.refresh()
         self.dom = ElementTree.parse(self.save)
 
     def load(self):
-        """Parse xml file, returns list of two dictionarys for Tile (0) and Team (1) data"""
+        """Parse xml file, returns list of dictionarys for Tile (0), Team (1), and Tech (2) data"""
         tile_data = {}
         for c in self.dom.findall('levels/LevelState'):
             name = c.find('objectName').text
@@ -77,8 +80,20 @@ class Save:
             level = {name: {'owner': owner, 'battalions': battalions}}
             tile_data.update(level)
 
-        team_data = {}
+        tech_data = {}
+        iteration = 0
+        for ids in self.dom.findall('teamTechStatus/TechStatus/unlockedTechIds'):
+            if iteration == 0:
+                tech_data[iteration] = []
+            elif iteration == 1:
+                tech_data[iteration] = []
+            else:
+                raise 'Unknown TechId Tag'
+            for e in ids:
+                tech_data[iteration].append(e.text)
+            iteration += 1
 
+        team_data = {}
         eg_coins = '?'
         eg_research = '?'
         ec_coins = '?'
@@ -106,10 +121,8 @@ class Save:
             elif value == 50:
                 rc_research = n.text
             value += 1
-
         team_data[0] = {}
         team_data[1] = {}
-
         team_data[0]['g_coins'] = eg_coins
         team_data[0]['g_research'] = eg_research
         team_data[0]['c_coins'] = ec_coins
@@ -119,7 +132,7 @@ class Save:
         team_data[1]['c_coins'] = rc_coins
         team_data[1]['c_research'] = rc_research
 
-        return [tile_data, team_data]
+        return [tile_data, team_data, tech_data]
 
 
 def main():
