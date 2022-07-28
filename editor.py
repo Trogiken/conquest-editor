@@ -6,6 +6,20 @@ from pathlib import Path
 
 
 class Terminal:
+    """
+    Terminal formatting
+
+        to print xml data with refresh() you must assign data to Terminal().data
+
+    Attributes
+    ----------
+    data : list
+        save data
+    """
+    def __init__(self):
+        """Constructs all necessary attributes for the Save object"""
+        self.data = None
+
     @staticmethod
     def delimit(s, delimiter, n, t):
         """
@@ -28,14 +42,63 @@ class Terminal:
                 segments[i] = '\n' + ('\t' * t) + seg  # prepend '\n' to segment
         return delimiter.join(segments)  # join segments
 
-    def refresh(self, data=None):
+    @staticmethod
+    def print(s, t=1, space_above=None, space_below=None):
+        """
+        Format and print string
+
+        Parameters
+        ----------
+        s : str
+            printed string
+        t : int
+            indent amount
+        space_above : int
+            number of blank lines above string (starts at 0)
+        space_below : int
+            number of blank line below string (starts at 0)
+        """
+        if space_above is not None:
+            print('\n' * space_above)
+        print(('\t' * t) + s)
+        if space_below is not None:
+            print('\n' * space_below)
+
+    @staticmethod
+    def q_print(s, t=1, space_above=None, space_below=None):
+        """
+        Format question and return input
+
+        Parameters
+        ----------
+        s : str
+            printed string
+        t : int
+            indent amount
+        space_above : int
+            number of blank lines above string (starts at 0)
+        space_below : int
+            number of blank line below string (starts at 0)
+        """
+        if space_above is not None:
+            print('\n' * space_above)
+        indent = '\t' * t
+        if s:
+            resp = input(indent + f"{s}\n" + indent + "> ")
+        else:
+            resp = input(indent + "> ")
+        if space_below is not None:
+            print('\n' * space_below)
+        return resp
+
+    def refresh(self, show_less=False):
         """
         Display splash and xml data at the top of terminal
 
         Parameters
         ----------
-        data : list
-            if data from save.load() is given, xml data will be displayed
+        show_less : bool
+            xml data will NOT be displayed even if (self.data) is assigned
         """
         system('cls')
         print(r"""
@@ -48,8 +111,8 @@ class Terminal:
         ----------------------------------------------------------------------------
         """)
 
-        if data is not None:
-            h = data
+        if self.data is not None and show_less is False:
+            h = self.data
 
             for p_id, p_info in h[1].items():
                 if p_id == 0:
@@ -74,9 +137,11 @@ class Terminal:
                 else:
                     occ = 'None'
                 print(f"\t\t{f}:{occ}\n\t\t\tBattalions: {h[0][f]['battalions']}")
+        print('#' * 92)
 
 
 class Save:
+    """Manage xml file"""
     def __init__(self):
         """Constructs all necessary attributes for the Save object"""
         self.cmd = Terminal()
@@ -156,10 +221,41 @@ class Save:
 
 def main():
     """Program Loop"""
-    cmd = Terminal()
     save = Save()
-    cmd.refresh(data=save.load())
+    cmd = Terminal()
+    cmd.data = save.load()
+
+    while True:
+        # MAIN
+        cmd.refresh()
+        cmd.print("[MAIN]", t=2)
+        cmd.print("Eagle : 1")
+        cmd.print("Raven : 2")
+        cmd.print("Reset : 3")
+        cmd.print("Exit  : 0")
+
+        try:
+            resp = int(cmd.q_print('', space_above=0))
+        except ValueError:
+            continue
+
+        if resp in [1, 2, 3, 0]:
+            if resp == 1:
+                # Eagle menu
+                pass
+            elif resp == 2:
+                # Raven Menu
+                pass
+            elif resp == 3:
+                # Reset xml file
+                pass
+            else:
+                return True
+        else:
+            continue
 
 
 if __name__ == '__main__':
-    main()
+    z = main()
+    if z:  # if program exited naturally
+        system('cls')
