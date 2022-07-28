@@ -7,7 +7,28 @@ from pathlib import Path
 
 class Terminal:
     @staticmethod
-    def refresh(data=None):
+    def delimit(s, delimiter, n, t):
+        """
+        Add '\n' every (n) (delimiter) to given string (s)
+
+        Parameters
+        ----------
+        s : str
+            string to delimit
+        delimiter : str
+            character(s) that will be iterated
+        n : int
+            how many iterations of the delimiter (delimiter) until '\n' is added to the given string (s)
+        t : int
+            indent amount
+        """
+        segments = s.split(delimiter)  # splits string by delimiter
+        for i, seg in enumerate(segments):
+            if i % n == 0 and i != 0:
+                segments[i] = '\n' + ('\t' * t) + seg  # prepend '\n' to segment
+        return delimiter.join(segments)  # join segments
+
+    def refresh(self, data=None):
         """
         Display splash and xml data at the top of terminal
 
@@ -36,10 +57,12 @@ class Terminal:
                 else:
                     team = 'Raven'
 
+                tech_items = self.delimit(', '.join(h[2][p_id]), ',', 6, 3)
+
                 print(f"\t{team}:\n"
                       f"\t\tGain:\n\t\t\tCoins: {p_info['g_coins']}\n\t\t\tResearch: {p_info['g_research']}\n"
                       f"\t\tAvailable:\n\t\t\tCoins: {p_info['c_coins']}\n\t\t\tResearch: {p_info['c_research']}\n"
-                      f"\t\tTech: {', '.join(h[2][p_id])}")
+                      f"\t\tTech: {tech_items}")
 
             print("\n\tTiles:")
             for f in h[0]:
