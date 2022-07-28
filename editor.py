@@ -32,8 +32,6 @@ class Terminal:
 
             h = save.load()
 
-            print(h[2][0])
-
             for p_id, p_info in h[1].items():
                 if p_id == 0:
                     team = 'Eagle'
