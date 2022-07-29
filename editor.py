@@ -243,7 +243,6 @@ def main(s, c):
         cmd.print("[MAIN]", t=2)
         cmd.print("Eagle : 1")
         cmd.print("Raven : 2")
-        cmd.print("Reset : 3")
         cmd.print("Exit  : 0")
 
         try:
@@ -251,16 +250,87 @@ def main(s, c):
         except ValueError:
             continue
 
-        if resp in [1, 2, 3, 0]:
+        if resp in [1, 2, 0]:
             if resp == 1:
-                # Eagle menu
-                pass
+                while True:
+                    # EAGLE
+                    cmd.refresh()
+                    cmd.print("[EAGLE]", t=2)
+                    cmd.print("Add  : 1")
+                    cmd.print("Sub  : 2")
+                    cmd.print("Back : 0")
+
+                    try:
+                        resp = int(cmd.q_print('', space_above=0))
+                    except ValueError:
+                        continue
+
+                    if resp in [1, 2, 0]:
+                        if resp == 1:
+                            while True:
+                                # ADD
+                                cmd.refresh()
+                                cmd.print("[ADD]", t=2)
+                                cmd.print("Coins    : 1")
+                                cmd.print("Research : 2")
+                                cmd.print("Back     : 0")
+
+                                try:
+                                    resp = int(cmd.q_print('', space_above=0))
+                                except ValueError:
+                                    continue
+
+                                if resp in [1, 2, 0]:
+                                    if resp == 1:
+                                        pass  # Update element and update cmd.data
+                                    elif resp == 2:
+                                        pass  # Update element and update cmd.data
+                                    else:
+                                        break
+                        elif resp == 2:
+                            while True:
+                                # DEL
+                                cmd.refresh()
+                                cmd.print("[DEL]", t=2)
+                                cmd.print("Coins    : 1")
+                                cmd.print("Research : 2")
+                                cmd.print("Back     : 0")
+
+                                try:
+                                    resp = int(cmd.q_print('', space_above=0))
+                                except ValueError:
+                                    continue
+
+                                if resp in [1, 2, 0]:
+                                    if resp == 1:
+                                        pass  # Update element and update cmd.data
+                                    elif resp == 2:
+                                        pass  # Update element and update cmd.data
+                                    else:
+                                        break
+                        else:
+                            break
             elif resp == 2:
-                # Raven Menu
-                pass
-            elif resp == 3:
-                # Reset xml file
-                pass
+                while True:
+                    # RAVEN
+                    cmd.refresh()
+                    cmd.print("[RAVEN]", t=2)
+                    cmd.print("Add  : 1")
+                    cmd.print("Sub  : 2")
+                    cmd.print("Back : 0")
+
+                    try:
+                        resp = int(cmd.q_print('', space_above=0))
+                    except ValueError:
+                        continue
+
+                    if resp in [1, 2, 0]:
+                        if resp == 1:
+                            pass
+                        elif resp == 2:
+                            pass
+                        else:
+                            break
             else:
                 return True
         else:
@@ -273,3 +343,4 @@ if __name__ == '__main__':
     z = main(s=Save, c=Terminal)
     if z:  # if program exited naturally
         Terminal.clear()
+        print("Goodbye...")
