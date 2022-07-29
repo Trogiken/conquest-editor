@@ -1,6 +1,7 @@
 from os import getenv, path, system
 from xml.etree import ElementTree
 from pathlib import Path
+import platform
 # n.text = str(int(10))
 # self.dom.write(self.save)
 
@@ -41,6 +42,14 @@ class Terminal:
             if i % n == 0 and i != 0:
                 segments[i] = '\n' + ('\t' * t) + seg  # prepend '\n' to segment
         return delimiter.join(segments)  # join segments
+
+    @staticmethod
+    def clear():
+        os = platform.system()
+        if os == 'Windows':
+            system('cls')
+        elif os == 'Darwin':
+            system('clear')
 
     @staticmethod
     def print(s, t=1, space_above=None, space_below=None):
@@ -100,7 +109,7 @@ class Terminal:
         show_less : bool
             xml data will NOT be displayed even if (self.data) is assigned
         """
-        system('cls')
+        self.clear()
         print(r"""
           _____                _ _              _       _____    _ _ _             
          |_   _| __ ___   __ _(_) | _____ _ __ ( )___  | ____|__| (_) |_ ___  _ __ 
@@ -145,13 +154,16 @@ class Save:
     def __init__(self):
         """Constructs all necessary attributes for the Save object"""
         self.cmd = Terminal()
-        self.appdata = str(Path(getenv("APPDATA")).parents[0])
+        try:
+            self.appdata = str(Path(getenv("APPDATA")).parents[0])
+        except TypeError:
+            self.appdata = 'ENV_Not_Found'
         self.save = self.appdata + '\\LocalLow\\SteelRaven7\\RavenfieldSteam\\Saves\\autosave.xml'
         self.dom = None
 
-        while not path.exists(self.save):  # DEBUG: Make sure file is real and doesn't just exist
-            self.save = input("\tSave not found | Enter path to Save; e.g: \\path\\to\\autosave.xml\n> ")
+        while not path.exists(self.save):  # Feature: Save location if not found
             self.cmd.refresh()
+            self.save = self.cmd.q_print("Save not found | Enter path to Save; e.g: \\path\\to\\autosave.xml")
         self.dom = ElementTree.parse(self.save)
 
     def load(self):
@@ -219,10 +231,10 @@ class Save:
         return [tile_data, team_data, tech_data]
 
 
-def main():
+def main(s, c):
     """Program Loop"""
-    save = Save()
-    cmd = Terminal()
+    save = s
+    cmd = c
     cmd.data = save.load()
 
     while True:
@@ -256,6 +268,8 @@ def main():
 
 
 if __name__ == '__main__':
-    z = main()
+    Save = Save()
+    Terminal = Terminal()
+    z = main(s=Save, c=Terminal)
     if z:  # if program exited naturally
-        system('cls')
+        Terminal.clear()
