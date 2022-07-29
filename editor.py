@@ -326,9 +326,47 @@ def main(s, c):
 
                     if resp in [1, 2, 0]:
                         if resp == 1:
-                            pass
+                            while True:
+                                # ADD
+                                cmd.refresh()
+                                cmd.print("[ADD]", t=2)
+                                cmd.print("Coins    : 1")
+                                cmd.print("Research : 2")
+                                cmd.print("Back     : 0")
+
+                                try:
+                                    resp = int(cmd.q_print('', space_above=0))
+                                except ValueError:
+                                    continue
+
+                                if resp in [1, 2, 0]:
+                                    if resp == 1:
+                                        pass  # Update element and update cmd.data
+                                    elif resp == 2:
+                                        pass  # Update element and update cmd.data
+                                    else:
+                                        break
                         elif resp == 2:
-                            pass
+                            while True:
+                                # DEL
+                                cmd.refresh()
+                                cmd.print("[DEL]", t=2)
+                                cmd.print("Coins    : 1")
+                                cmd.print("Research : 2")
+                                cmd.print("Back     : 0")
+
+                                try:
+                                    resp = int(cmd.q_print('', space_above=0))
+                                except ValueError:
+                                    continue
+
+                                if resp in [1, 2, 0]:
+                                    if resp == 1:
+                                        pass  # Update element and update cmd.data
+                                    elif resp == 2:
+                                        pass  # Update element and update cmd.data
+                                    else:
+                                        break
                         else:
                             break
             else:
