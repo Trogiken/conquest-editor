@@ -248,7 +248,6 @@ class Save:
             if variable in ['eg_coins', 'eg_research', 'ec_coins', 'ec_research', 'rg_coins', 'rg_research', 'rc_coins', 'rc_research']:
                 iteration = 1
                 for n in self.dom.iter('int'):
-                    print(iteration)
                     if iteration == 1 and variable == 'eg_coins':
                         n.text = str(int(value))
                     elif iteration == 2 and variable == 'eg_research':
@@ -309,7 +308,7 @@ def main(s, c):
 
         while True:
             cmd.refresh()
-            cmd.print(f"[{team_header}]", t=2)
+            cmd.print(f"[{main_header}/{team_header}]", t=2)
             cmd.print("Set  : 1")
             cmd.print("Back : 0")
 
@@ -328,7 +327,7 @@ def main(s, c):
 
             while True:
                 cmd.refresh()
-                cmd.print(f"[{action_header}]", t=2)
+                cmd.print(f"[{main_header}/{team_header}/{action_header}]", t=2)
                 cmd.print("Coins    : 1")
                 cmd.print("Research : 2")
                 # Feature: (3) Tech
