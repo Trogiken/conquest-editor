@@ -2,8 +2,6 @@ from os import getenv, path, system
 from xml.etree import ElementTree
 from pathlib import Path
 import platform
-# n.text = str(int(10))
-# self.dom.write(self.save)
 
 
 class Terminal:
@@ -231,6 +229,51 @@ class Save:
 
         return [tile_data, team_data, tech_data]
 
+    def update(self, category_id, variable, value):
+        """
+        Update data in xml file
+
+        Parameters
+        ----------
+        category_id : int
+            index from save.load()
+        variable : str
+            element/tag to be updated
+        value : str
+            new value of element/tag
+        """
+        if category_id == 0:
+            pass
+        elif category_id == 1:
+            if variable in ['eg_coins', 'eg_research', 'ec_coins', 'ec_research', 'rg_coins', 'rg_research', 'rc_coins', 'rc_research']:
+                iteration = 1
+                for n in self.dom.iter('int'):
+                    print(iteration)
+                    if iteration == 1 and variable == 'eg_coins':
+                        n.text = str(int(value))
+                    elif iteration == 2 and variable == 'eg_research':
+                        n.text = str(int(value))
+                    elif iteration == 17 and variable == 'ec_coins':
+                        n.text = str(int(value))
+                    elif iteration == 18 and variable == 'ec_research':
+                        n.text = str(int(value))
+                    elif iteration == 33 and variable == 'rg_coins':
+                        n.text = str(int(value))
+                    elif iteration == 34 and variable == 'rg_research':
+                        n.text = str(int(value))
+                    elif iteration == 49 and variable == 'rc_coins':
+                        n.text = str(int(value))
+                    elif iteration == 50 and variable == 'rc_research':
+                        n.text = str(int(value))
+                    iteration += 1
+                self.dom.write(self.save)
+            else:
+                raise 'Invalid Variable'
+        elif category_id == 2:
+            pass
+        else:
+            raise 'Invalid Category ID'
+
 
 def main(s, c):
     """Program Loop"""
@@ -255,10 +298,10 @@ def main(s, c):
         if resp in [1, 2, 0]:
             if resp == 1:
                 team_header = 'EAGLE'
-                team = 0
+                team = 'e'
             elif resp == 2:
                 team_header = 'RAVEN'
-                team = 1
+                team = 'r'
             else:
                 return True
         else:
@@ -267,8 +310,7 @@ def main(s, c):
         while True:
             cmd.refresh()
             cmd.print(f"[{team_header}]", t=2)
-            cmd.print("Add  : 1")
-            cmd.print("Del  : 2")
+            cmd.print("Set  : 1")
             cmd.print("Back : 0")
 
             try:
@@ -276,11 +318,9 @@ def main(s, c):
             except ValueError:
                 continue
 
-            if resp in [1, 2, 0]:
+            if resp in [1, 0]:
                 if resp == 1:
-                    action_header = 'ADD'
-                elif resp == 2:
-                    action_header = 'DEL'
+                    action_header = 'SET'
                 else:
                     break
             else:
@@ -301,9 +341,25 @@ def main(s, c):
 
                 if opt in [1, 2, 0]:
                     if opt == 1:
-                        pass  # check team (0 = Eagle, 1 = Raven) and change values
+                        while True:
+                            cmd.refresh(show_less=True)
+                            try:
+                                num = int(cmd.q_print('Amount of Coins', space_above=0))
+                                save.update(1, f'{team}c_coins', num)
+                                cmd.data = save.load()
+                                break
+                            except ValueError:
+                                continue
                     elif opt == 2:
-                        pass  # check team (0 = Eagle, 1 = Raven) and change values
+                        while True:
+                            cmd.refresh(show_less=True)
+                            try:
+                                num = int(cmd.q_print('Amount of Research', space_above=0))
+                                save.update(1, f'{team}c_research', num)
+                                cmd.data = save.load()
+                                break
+                            except ValueError:
+                                continue
                     else:
                         break
                 else:
