@@ -154,6 +154,7 @@ class Save:
     def __init__(self):
         """Constructs all necessary attributes for the Save object"""
         self.cmd = Terminal()
+        # Feature: List of possible cross-platform paths to autosave, (for i in paths: if path exists: self.save = i)
         try:
             self.appdata = str(Path(getenv("APPDATA")).parents[0])
         except TypeError:
@@ -237,10 +238,11 @@ def main(s, c):
     cmd = c
     cmd.data = save.load()
 
+    main_header = 'MAIN'
+
     while True:
-        # MAIN
         cmd.refresh()
-        cmd.print("[MAIN]", t=2)
+        cmd.print(f"[{main_header}]", t=2)
         cmd.print("Eagle : 1")
         cmd.print("Raven : 2")
         cmd.print("Exit  : 0")
@@ -252,127 +254,60 @@ def main(s, c):
 
         if resp in [1, 2, 0]:
             if resp == 1:
-                while True:
-                    # EAGLE
-                    cmd.refresh()
-                    cmd.print("[EAGLE]", t=2)
-                    cmd.print("Add  : 1")
-                    cmd.print("Sub  : 2")
-                    cmd.print("Back : 0")
-
-                    try:
-                        resp = int(cmd.q_print('', space_above=0))
-                    except ValueError:
-                        continue
-
-                    if resp in [1, 2, 0]:
-                        if resp == 1:
-                            while True:
-                                # ADD
-                                cmd.refresh()
-                                cmd.print("[ADD]", t=2)
-                                cmd.print("Coins    : 1")
-                                cmd.print("Research : 2")
-                                cmd.print("Back     : 0")
-
-                                try:
-                                    resp = int(cmd.q_print('', space_above=0))
-                                except ValueError:
-                                    continue
-
-                                if resp in [1, 2, 0]:
-                                    if resp == 1:
-                                        pass  # Update element and update cmd.data
-                                    elif resp == 2:
-                                        pass  # Update element and update cmd.data
-                                    else:
-                                        break
-                        elif resp == 2:
-                            while True:
-                                # DEL
-                                cmd.refresh()
-                                cmd.print("[DEL]", t=2)
-                                cmd.print("Coins    : 1")
-                                cmd.print("Research : 2")
-                                cmd.print("Back     : 0")
-
-                                try:
-                                    resp = int(cmd.q_print('', space_above=0))
-                                except ValueError:
-                                    continue
-
-                                if resp in [1, 2, 0]:
-                                    if resp == 1:
-                                        pass  # Update element and update cmd.data
-                                    elif resp == 2:
-                                        pass  # Update element and update cmd.data
-                                    else:
-                                        break
-                        else:
-                            break
+                team_header = 'EAGLE'
+                team = 0
             elif resp == 2:
-                while True:
-                    # RAVEN
-                    cmd.refresh()
-                    cmd.print("[RAVEN]", t=2)
-                    cmd.print("Add  : 1")
-                    cmd.print("Sub  : 2")
-                    cmd.print("Back : 0")
-
-                    try:
-                        resp = int(cmd.q_print('', space_above=0))
-                    except ValueError:
-                        continue
-
-                    if resp in [1, 2, 0]:
-                        if resp == 1:
-                            while True:
-                                # ADD
-                                cmd.refresh()
-                                cmd.print("[ADD]", t=2)
-                                cmd.print("Coins    : 1")
-                                cmd.print("Research : 2")
-                                cmd.print("Back     : 0")
-
-                                try:
-                                    resp = int(cmd.q_print('', space_above=0))
-                                except ValueError:
-                                    continue
-
-                                if resp in [1, 2, 0]:
-                                    if resp == 1:
-                                        pass  # Update element and update cmd.data
-                                    elif resp == 2:
-                                        pass  # Update element and update cmd.data
-                                    else:
-                                        break
-                        elif resp == 2:
-                            while True:
-                                # DEL
-                                cmd.refresh()
-                                cmd.print("[DEL]", t=2)
-                                cmd.print("Coins    : 1")
-                                cmd.print("Research : 2")
-                                cmd.print("Back     : 0")
-
-                                try:
-                                    resp = int(cmd.q_print('', space_above=0))
-                                except ValueError:
-                                    continue
-
-                                if resp in [1, 2, 0]:
-                                    if resp == 1:
-                                        pass  # Update element and update cmd.data
-                                    elif resp == 2:
-                                        pass  # Update element and update cmd.data
-                                    else:
-                                        break
-                        else:
-                            break
+                team_header = 'RAVEN'
+                team = 1
             else:
                 return True
         else:
             continue
+
+        while True:
+            cmd.refresh()
+            cmd.print(f"[{team_header}]", t=2)
+            cmd.print("Add  : 1")
+            cmd.print("Del  : 2")
+            cmd.print("Back : 0")
+
+            try:
+                resp = int(cmd.q_print('', space_above=0))
+            except ValueError:
+                continue
+
+            if resp in [1, 2, 0]:
+                if resp == 1:
+                    action_header = 'ADD'
+                elif resp == 2:
+                    action_header = 'DEL'
+                else:
+                    break
+            else:
+                continue
+
+            while True:
+                cmd.refresh()
+                cmd.print(f"[{action_header}]", t=2)
+                cmd.print("Coins    : 1")
+                cmd.print("Research : 2")
+                # Feature: (3) Tech
+                cmd.print("Back     : 0")
+
+                try:
+                    opt = int(cmd.q_print('', space_above=0))
+                except ValueError:
+                    continue
+
+                if opt in [1, 2, 0]:
+                    if opt == 1:
+                        pass  # check team (0 = Eagle, 1 = Raven) and change values
+                    elif opt == 2:
+                        pass  # check team (0 = Eagle, 1 = Raven) and change values
+                    else:
+                        break
+                else:
+                    continue
 
 
 if __name__ == '__main__':
