@@ -48,7 +48,7 @@ class Terminal:
         os = platform.system()
         if os == 'Windows':
             system('cls')
-        elif os == 'Darwin':
+        else:
             system('clear')
 
     @staticmethod
