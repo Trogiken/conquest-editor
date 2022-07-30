@@ -268,6 +268,7 @@ class Save:
                 name = c.find('objectName').text
                 if name == variable:
                     c.find('owner').text = str(int(value))
+                    self.dom.write(self.save)
                 else:
                     continue
         elif category_id == 1:  # Team
@@ -419,10 +420,15 @@ def main(s, c):
                                     while True:
                                         cmd.refresh(team_data=False, tech_data=False)
                                         try:
-                                            owner = int(cmd.q_print('Eagle=0, Raven=1, None=-1 | Back : 0', space_above=0))
+                                            owner = int(cmd.q_print('Eagle=1, Raven=2, None=-1 | Back : 0', space_above=0))
                                         except ValueError:
                                             continue
+
                                         if owner != 0:
+                                            if owner == 1:
+                                                owner = 0
+                                            elif owner == 2:
+                                                owner = 1
                                             if owner in [0, 1, -1]:
                                                 save.update(0, tile_name, owner)
                                                 cmd.data = save.load()
