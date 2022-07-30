@@ -14,10 +14,17 @@ class Terminal:
     ----------
     data : list
         save data
+    eagle : bool
+        display eagle team data
+    raven : bool
+        display raven team data
     """
     def __init__(self):
         """Constructs all necessary attributes for the Save object"""
         self.data = None
+
+        self.eagle = True
+        self.raven = True
 
     @staticmethod
     def delimit(s, delimiter, n, t):
@@ -98,14 +105,21 @@ class Terminal:
             print('\n' * space_below)
         return resp
 
-    def refresh(self, show_less=False):
+    def refresh(self, show_less=False, tile_data=True, team_data=True, tech_data=True):
         """
         Display splash and xml data at the top of terminal
+            change class attribute (eagle/raven) to True or False to display/hide specific team
 
         Parameters
         ----------
         show_less : bool
             xml data will NOT be displayed even if (self.data) is assigned
+        tile_data : bool
+            display tile data
+        team_data : bool
+            display team data
+        tech_data : bool
+            display tech data; (team) must be True to display
         """
         self.clear()
         print(r"""
@@ -123,27 +137,34 @@ class Terminal:
 
             for p_id, p_info in h[1].items():
                 if p_id == 0:
-                    team = 'Eagle'
+                    team_name = 'Eagle'
+                    if self.eagle is False:
+                        continue
                 else:
-                    team = 'Raven'
+                    team_name = 'Raven'
+                    if self.raven is False:
+                        continue
 
-                tech_items = self.delimit(', '.join(h[2][p_id]), ',', 6, 3)
+                if team_data or tech_data:
+                    print(f"\t{team_name}:")
+                    if team_data:
+                        print(f"\t\tGain:\n\t\t\tCoins: {p_info['g_coins']}\n\t\t\tResearch: {p_info['g_research']}\n"
+                              f"\t\tAvailable:\n\t\t\tCoins: {p_info['c_coins']}\n\t\t\tResearch: {p_info['c_research']}")
+                    if tech_data:
+                        tech_items = self.delimit(', '.join(h[2][p_id]), ',', 6, 3)
+                        print(f"\t\tTech: {tech_items}")
 
-                print(f"\t{team}:\n"
-                      f"\t\tGain:\n\t\t\tCoins: {p_info['g_coins']}\n\t\t\tResearch: {p_info['g_research']}\n"
-                      f"\t\tAvailable:\n\t\t\tCoins: {p_info['c_coins']}\n\t\t\tResearch: {p_info['c_research']}\n"
-                      f"\t\tTech: {tech_items}")
-
-            print("\n\tTiles:")
-            for f in h[0]:
-                owner = h[0][f]['owner']
-                if owner == '0':
-                    occ = 'Eagle'
-                elif owner == '1':
-                    occ = 'Raven'
-                else:
-                    occ = 'None'
-                print(f"\t\t{f}:{occ}\n\t\t\tBattalions: {h[0][f]['battalions']}")
+            if tile_data:
+                print("\n\tTiles:")
+                for f in h[0]:
+                    owner = h[0][f]['owner']
+                    if owner == '0':
+                        occ = 'Eagle'
+                    elif owner == '1':
+                        occ = 'Raven'
+                    else:
+                        occ = 'None'
+                    print(f"\t\t{f}:{occ}\n\t\t\tBattalions: {h[0][f]['battalions']}")
         print('#' * 92)
 
 
@@ -242,9 +263,9 @@ class Save:
         value : str
             new value of element/tag
         """
-        if category_id == 0:
+        if category_id == 0:  # Tile
             pass
-        elif category_id == 1:
+        elif category_id == 1:  # Team
             if variable in ['eg_coins', 'eg_research', 'ec_coins', 'ec_research', 'rg_coins', 'rg_research', 'rc_coins', 'rc_research']:
                 iteration = 1
                 for n in self.dom.iter('int'):
@@ -268,7 +289,7 @@ class Save:
                 self.dom.write(self.save)
             else:
                 raise 'Invalid Variable'
-        elif category_id == 2:
+        elif category_id == 2:  # Tech
             pass
         else:
             raise 'Invalid Category ID'
@@ -283,6 +304,8 @@ def main(s, c):
     main_header = 'MAIN'
 
     while True:
+        cmd.raven = True
+        cmd.eagle = True
         cmd.refresh()
         cmd.print(f"[{main_header}]", t=2)
         cmd.print("Eagle : 1")
@@ -298,9 +321,11 @@ def main(s, c):
             if resp == 1:
                 team_header = 'EAGLE'
                 team = 'e'
+                cmd.raven = False
             elif resp == 2:
                 team_header = 'RAVEN'
                 team = 'r'
+                cmd.eagle = False
             else:
                 return True
         else:
@@ -309,56 +334,113 @@ def main(s, c):
         while True:
             cmd.refresh()
             cmd.print(f"[{main_header}/{team_header}]", t=2)
-            cmd.print("Set  : 1")
-            cmd.print("Back : 0")
+            cmd.print("Resource  : 1")
+            cmd.print("Tile      : 2")
+            cmd.print("Tech      : 3")
+            cmd.print("Back      : 0")
 
             try:
                 resp = int(cmd.q_print('', space_above=0))
             except ValueError:
                 continue
 
-            if resp in [1, 0]:
+            if resp in [1, 2, 3, 0]:
                 if resp == 1:
-                    action_header = 'SET'
+                    category_header = 'RESOURCE'
+                    while True:
+                        cmd.refresh(tile_data=False, tech_data=False)
+                        cmd.print(f"[{main_header}/{team_header}/{category_header}]", t=2)
+                        cmd.print("Coins    : 1")
+                        cmd.print("Research : 2")
+                        cmd.print("Back     : 0")
+
+                        try:
+                            opt = int(cmd.q_print('', space_above=0))
+                        except ValueError:
+                            continue
+
+                        if opt in [1, 2, 0]:
+                            if opt == 1:
+                                s = 'Amount of Coins'
+                                v = f'{team}c_coins'
+                            elif opt == 2:
+                                s = 'Amount of Research'
+                                v = f'{team}c_research'
+                            else:
+                                break
+                        else:
+                            continue
+
+                        while True:
+                            cmd.refresh(tile_data=False, tech_data=False)
+                            try:
+                                num = int(cmd.q_print(s, space_above=0))
+                                save.update(1, v, num)
+                                cmd.data = save.load()
+                                break
+                            except ValueError:
+                                continue
+                elif resp == 2:
+                    category_header = 'TILE'
+                    while True:
+                        cmd.refresh(team_data=False, tech_data=False)
+                        cmd.print(f"[{main_header}/{team_header}/{category_header}]", t=2)
+                        cmd.print("Ownership    : 1")
+                        cmd.print("Battalions   : 2")
+                        cmd.print("Back         : 0")
+
+                        try:
+                            opt = int(cmd.q_print('', space_above=0))
+                        except ValueError:
+                            continue
+
+                        if opt in [1, 2, 0]:
+                            if opt == 1:
+                                # while True:
+                                # cmd.refresh(team_data=False, tech_data=False)
+                                # d = save.load()
+                                # name = cmd.q_print('Tile Name', space_above=0)
+                                # owner = cmd.q_print('0 = Eagle, 1 = Raven, -1 = None', space_above=0)
+
+                                # save.update(1, , num)
+                                # cmd.data = save.load()
+                                # break
+                                pass
+                            elif opt == 2:
+                                pass
+                            else:
+                                break
+                elif resp == 3:
+                    category_header = 'TECH'
+                    while True:
+                        cmd.refresh(team_data=False, tile_data=False)
+                        cmd.print(f"[{main_header}/{team_header}/{category_header}]", t=2)
+                        cmd.print("Add        : 1")
+                        cmd.print("Del        : 2")
+                        cmd.print("Add All    : 3")
+                        cmd.print("Remove All : 4")
+                        cmd.print("Back       : 0")
+
+                        try:
+                            opt = int(cmd.q_print('', space_above=0))
+                        except ValueError:
+                            continue
+
+                        if opt in [1, 2, 0]:
+                            if opt == 1:
+                                pass
+                            elif opt == 2:
+                                pass
+                            elif opt == 3:
+                                pass
+                            elif opt == 4:
+                                pass
+                            else:
+                                break
                 else:
                     break
             else:
                 continue
-
-            while True:
-                cmd.refresh()
-                cmd.print(f"[{main_header}/{team_header}/{action_header}]", t=2)
-                cmd.print("Coins    : 1")
-                cmd.print("Research : 2")
-                # Feature: (3) Tech
-                cmd.print("Back     : 0")
-
-                try:
-                    opt = int(cmd.q_print('', space_above=0))
-                except ValueError:
-                    continue
-
-                if opt in [1, 2, 0]:
-                    if opt == 1:
-                        s = 'Amount of Coins'
-                        v = f'{team}c_coins'
-                    elif opt == 2:
-                        s = 'Amount of Research'
-                        v = f'{team}c_research'
-                    else:
-                        break
-                else:
-                    continue
-
-                while True:
-                    cmd.refresh(show_less=True)
-                    try:
-                        num = int(cmd.q_print(s, space_above=0))
-                        save.update(1, v, num)
-                        cmd.data = save.load()
-                        break
-                    except ValueError:
-                        continue
 
 
 if __name__ == '__main__':
