@@ -340,29 +340,25 @@ def main(s, c):
 
                 if opt in [1, 2, 0]:
                     if opt == 1:
-                        while True:
-                            cmd.refresh(show_less=True)
-                            try:
-                                num = int(cmd.q_print('Amount of Coins', space_above=0))
-                                save.update(1, f'{team}c_coins', num)
-                                cmd.data = save.load()
-                                break
-                            except ValueError:
-                                continue
+                        s = 'Amount of Coins'
+                        v = f'{team}c_coins'
                     elif opt == 2:
-                        while True:
-                            cmd.refresh(show_less=True)
-                            try:
-                                num = int(cmd.q_print('Amount of Research', space_above=0))
-                                save.update(1, f'{team}c_research', num)
-                                cmd.data = save.load()
-                                break
-                            except ValueError:
-                                continue
+                        s = 'Amount of Research'
+                        v = f'{team}c_research'
                     else:
                         break
                 else:
                     continue
+
+                while True:
+                    cmd.refresh(show_less=True)
+                    try:
+                        num = int(cmd.q_print(s, space_above=0))
+                        save.update(1, v, num)
+                        cmd.data = save.load()
+                        break
+                    except ValueError:
+                        continue
 
 
 if __name__ == '__main__':
