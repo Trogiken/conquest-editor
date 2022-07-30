@@ -14,17 +14,17 @@ class Terminal:
     ----------
     data : list
         save data
-    eagle : bool
+    show_eagle : bool
         display eagle team data
-    raven : bool
+    show_raven : bool
         display raven team data
     """
     def __init__(self):
         """Constructs all necessary attributes for the Save object"""
         self.data = None
 
-        self.eagle = True
-        self.raven = True
+        self.show_eagle = True
+        self.show_raven = True
 
     @staticmethod
     def delimit(s, delimiter, n, t):
@@ -138,11 +138,11 @@ class Terminal:
             for p_id, p_info in h[1].items():
                 if p_id == 0:
                     team_name = 'Eagle'
-                    if self.eagle is False:
+                    if self.show_eagle is False:
                         continue
                 else:
                     team_name = 'Raven'
-                    if self.raven is False:
+                    if self.show_raven is False:
                         continue
 
                 if team_data or tech_data:
@@ -264,7 +264,12 @@ class Save:
             new value of element/tag
         """
         if category_id == 0:  # Tile
-            pass
+            for c in self.dom.findall('levels/LevelState'):
+                name = c.find('objectName').text
+                if name == variable:
+                    c.find('owner').text = str(int(value))
+                else:
+                    continue
         elif category_id == 1:  # Team
             if variable in ['eg_coins', 'eg_research', 'ec_coins', 'ec_research', 'rg_coins', 'rg_research', 'rc_coins', 'rc_research']:
                 iteration = 1
@@ -304,8 +309,8 @@ def main(s, c):
     main_header = 'MAIN'
 
     while True:
-        cmd.raven = True
-        cmd.eagle = True
+        cmd.show_raven = True
+        cmd.show_eagle = True
         cmd.refresh()
         cmd.print(f"[{main_header}]", t=2)
         cmd.print("Eagle : 1")
@@ -321,11 +326,11 @@ def main(s, c):
             if resp == 1:
                 team_header = 'EAGLE'
                 team = 'e'
-                cmd.raven = False
+                cmd.show_raven = False
             elif resp == 2:
                 team_header = 'RAVEN'
                 team = 'r'
-                cmd.eagle = False
+                cmd.show_eagle = False
             else:
                 return True
         else:
@@ -374,13 +379,16 @@ def main(s, c):
                         while True:
                             cmd.refresh(tile_data=False, tech_data=False)
                             try:
-                                num = int(cmd.q_print(s, space_above=0))
+                                num = int(cmd.q_print(s + ' | Back: 0', space_above=0))
+                            except ValueError:
+                                continue
+                            if num != 0:
                                 save.update(1, v, num)
                                 cmd.data = save.load()
                                 break
-                            except ValueError:
-                                continue
-                elif resp == 2:
+                            else:
+                                break
+                elif resp == 2:  # Rework: Move tile menu to MAIN menu
                     category_header = 'TILE'
                     while True:
                         cmd.refresh(team_data=False, tech_data=False)
@@ -396,16 +404,33 @@ def main(s, c):
 
                         if opt in [1, 2, 0]:
                             if opt == 1:
-                                # while True:
-                                # cmd.refresh(team_data=False, tech_data=False)
-                                # d = save.load()
-                                # name = cmd.q_print('Tile Name', space_above=0)
-                                # owner = cmd.q_print('0 = Eagle, 1 = Raven, -1 = None', space_above=0)
-
-                                # save.update(1, , num)
-                                # cmd.data = save.load()
-                                # break
-                                pass
+                                tile_names = []
+                                for c in save.dom.findall('levels/LevelState'):
+                                    name = c.find('objectName').text
+                                    tile_names.append(name)
+                                while True:
+                                    cmd.refresh(team_data=False, tech_data=False)
+                                    tile_name = cmd.q_print('Name of tile you want to edit | Back : 0', space_above=0)
+                                    if tile_name != '0':
+                                        if tile_name not in tile_names:
+                                            continue
+                                    else:
+                                        break
+                                    while True:
+                                        cmd.refresh(team_data=False, tech_data=False)
+                                        try:
+                                            owner = int(cmd.q_print('Eagle=0, Raven=1, None=-1 | Back : 0', space_above=0))
+                                        except ValueError:
+                                            continue
+                                        if owner != 0:
+                                            if owner in [0, 1, -1]:
+                                                save.update(0, tile_name, owner)
+                                                cmd.data = save.load()
+                                                break
+                                            else:
+                                                continue
+                                        else:
+                                            break
                             elif opt == 2:
                                 pass
                             else:
