@@ -302,7 +302,18 @@ class Save:
 
 
 class Editor:
+    """
+    Program class
+
+    Attributes
+    ----------
+    save : object
+        Save()
+    cmd : object
+        Terminal()
+    """
     def __init__(self, save, terminal):
+        """Constructs all necessary attributes for the Editor object"""
         self.save = save
         self.cmd = terminal
 
@@ -311,6 +322,7 @@ class Editor:
         self.category_header = ''
 
     def _team_menu(self):
+        """team management"""
         while True:
             self.cmd.refresh()
             self.cmd.print(f"[{self.main_header}/{self.team_header}]", t=2)
@@ -398,6 +410,7 @@ class Editor:
                 continue
 
     def _tile_menu(self):
+        """tile management"""
         self.category_header = 'TILE'
         while True:
             self.cmd.refresh(team_data=False, tech_data=False)
