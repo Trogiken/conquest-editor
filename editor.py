@@ -19,6 +19,7 @@ class Terminal:
     show_raven : bool
         display raven team data
     """
+
     def __init__(self):
         """Constructs all necessary attributes for the Save object"""
         self.data = None
@@ -170,6 +171,7 @@ class Terminal:
 
 class Save:
     """Manage xml file"""
+
     def __init__(self):
         """Constructs all necessary attributes for the Save object"""
         self.cmd = Terminal()
@@ -288,7 +290,7 @@ class Save:
             raise 'Invalid Variable'
 
     def tech_update(self):
-       pass
+        pass
 
 
 class Editor:
