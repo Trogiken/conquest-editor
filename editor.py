@@ -250,55 +250,45 @@ class Save:
 
         return [tile_data, team_data, tech_data]
 
-    def update(self, category_id, variable, value):
-        """
-        Update data in xml file
-
-        Parameters
-        ----------
-        category_id : int
-            index from save.load()
-        variable : str
-            element/tag to be updated
-        value : str
-            new value of element/tag
-        """
-        if category_id == 0:  # Tile
+    def tile_update(self, tag, tile, value):
+        if tag in ['owner', 'battalions']:
             for c in self.dom.findall('levels/LevelState'):
                 name = c.find('objectName').text
-                if name == variable:
-                    c.find('owner').text = str(int(value))
+                if name == tile:
+                    c.find(tag).text = str(int(value))
                     self.dom.write(self.save)
                 else:
                     continue
-        elif category_id == 1:  # Team
-            if variable in ['eg_coins', 'eg_research', 'ec_coins', 'ec_research', 'rg_coins', 'rg_research', 'rc_coins', 'rc_research']:
-                iteration = 1
-                for n in self.dom.iter('int'):
-                    if iteration == 1 and variable == 'eg_coins':
-                        n.text = str(int(value))
-                    elif iteration == 2 and variable == 'eg_research':
-                        n.text = str(int(value))
-                    elif iteration == 17 and variable == 'ec_coins':
-                        n.text = str(int(value))
-                    elif iteration == 18 and variable == 'ec_research':
-                        n.text = str(int(value))
-                    elif iteration == 33 and variable == 'rg_coins':
-                        n.text = str(int(value))
-                    elif iteration == 34 and variable == 'rg_research':
-                        n.text = str(int(value))
-                    elif iteration == 49 and variable == 'rc_coins':
-                        n.text = str(int(value))
-                    elif iteration == 50 and variable == 'rc_research':
-                        n.text = str(int(value))
-                    iteration += 1
-                self.dom.write(self.save)
-            else:
-                raise 'Invalid Variable'
-        elif category_id == 2:  # Tech
-            pass
         else:
-            raise 'Invalid Category ID'
+            raise 'Invalid Tag'
+
+    def resource_update(self, variable, value):
+        if variable in ['eg_coins', 'eg_research', 'ec_coins', 'ec_research', 'rg_coins', 'rg_research', 'rc_coins', 'rc_research']:
+            iteration = 1
+            for n in self.dom.iter('int'):
+                if iteration == 1 and variable == 'eg_coins':
+                    n.text = str(int(value))
+                elif iteration == 2 and variable == 'eg_research':
+                    n.text = str(int(value))
+                elif iteration == 17 and variable == 'ec_coins':
+                    n.text = str(int(value))
+                elif iteration == 18 and variable == 'ec_research':
+                    n.text = str(int(value))
+                elif iteration == 33 and variable == 'rg_coins':
+                    n.text = str(int(value))
+                elif iteration == 34 and variable == 'rg_research':
+                    n.text = str(int(value))
+                elif iteration == 49 and variable == 'rc_coins':
+                    n.text = str(int(value))
+                elif iteration == 50 and variable == 'rc_research':
+                    n.text = str(int(value))
+                iteration += 1
+            self.dom.write(self.save)
+        else:
+            raise 'Invalid Variable'
+
+    def tech_update(self):
+       pass
 
 
 class Editor:
@@ -354,11 +344,11 @@ class Editor:
                             if opt == 1:
                                 t = 'COINS'
                                 s = 'Amount of Coins'
-                                v = f'{self.team_header[0].lower()}c_coins'  # DEBUG
+                                v = f'{self.team_header[0].lower()}c_coins'
                             elif opt == 2:
                                 t = 'RESEARCH'
                                 s = 'Amount of Research'
-                                v = f'{self.team_header[0].lower()}c_research'  # DEBUG
+                                v = f'{self.team_header[0].lower()}c_research'
                             else:
                                 break
                         else:
@@ -372,7 +362,7 @@ class Editor:
                             except ValueError:
                                 continue
                             if num != 0:
-                                self.save.update(1, v, num)
+                                self.save.resource_update(v, num)
                                 self.cmd.data = self.save.load()
                                 break
                             else:
@@ -411,11 +401,10 @@ class Editor:
 
     def _tile_menu(self):
         """tile management"""
-        self.category_header = 'TILE'
         while True:
             self.cmd.refresh(team_data=False, tech_data=False)
             self.cmd.print(f"[{self.main_header}/{self.category_header}]", t=2)
-            self.cmd.print("Ownership    : 1")
+            self.cmd.print("Owner        : 1")
             self.cmd.print("Battalions   : 2")
             self.cmd.print("Back         : 0")
 
@@ -426,44 +415,53 @@ class Editor:
 
             if opt in [1, 2, 0]:
                 if opt == 1:
-                    tile_names = []
-                    for c in self.save.dom.findall('levels/LevelState'):
-                        name = c.find('objectName').text
-                        tile_names.append(name)
-                    while True:
-                        self.cmd.refresh(team_data=False, tech_data=False)
-                        self.cmd.print(f"[{self.main_header}/{self.category_header}/Ownership]", t=2)
-                        tile_name = self.cmd.q_print('Name of tile you want to edit | Back : 0', space_above=0)
-                        if tile_name != '0':
-                            if tile_name not in tile_names:
-                                continue
-                        else:
-                            break
-                        while True:
-                            self.cmd.refresh(team_data=False, tech_data=False)
-                            self.cmd.print(f"[{self.main_header}/{self.category_header}/Ownership]", t=2)
-                            try:
-                                owner = int(self.cmd.q_print('Eagle=1, Raven=2, None=-1 | Back : 0', space_above=0))
-                            except ValueError:
-                                continue
-
-                            if owner != 0:
-                                if owner == 1:
-                                    owner = 0
-                                elif owner == 2:
-                                    owner = 1
-                                if owner in [0, 1, -1]:
-                                    self.save.update(0, tile_name, owner)
-                                    self.cmd.data = self.save.load()
-                                    break
-                                else:
-                                    continue
-                            else:
-                                break
+                    t = 'OWNER'
+                    s = 'Eagle=1, Raven=2, None=-1'
                 elif opt == 2:
-                    pass
+                    t = 'BATTALIONS'
+                    s = 'Number of battalions (Max is 3)'
                 else:  # End of menu
                     break
+
+                tile_names = []
+                for c in self.save.dom.findall('levels/LevelState'):
+                    name = c.find('objectName').text
+                    tile_names.append(name)
+                while True:
+                    self.cmd.refresh(team_data=False, tech_data=False)
+                    self.cmd.print(f"[{self.main_header}/{self.category_header}/{t}]", t=2)
+                    tile_name = self.cmd.q_print('Name of tile you want to edit | Back : 0', space_above=0)
+                    if tile_name != '0':
+                        if tile_name not in tile_names:
+                            continue
+                    else:
+                        break
+                    while True:
+                        self.cmd.refresh(team_data=False, tech_data=False)
+                        self.cmd.print(f"[{self.main_header}/{self.category_header}/{t}]", t=2)
+                        try:
+                            value = int(self.cmd.q_print(s + ' | Back: 0', space_above=0))
+                        except ValueError:
+                            continue
+
+                        tag = t.lower()
+                        if value != 0:
+                            if tag == 'owner':
+                                if value in [1, 2, -1]:
+                                    if value == 1:  # 0 reps eagle
+                                        value = 0
+                                    elif value == 2:  # 1 reps raven
+                                        value = 1
+                                else:
+                                    continue
+                            elif tag == 'battalions':
+                                if not 3 >= value >= 0:  # Max 3, Min 0
+                                    continue
+                            self.save.tile_update(tag, tile_name, value)
+                            self.cmd.data = self.save.load()
+                            break
+                        else:
+                            break
             else:
                 continue
 
@@ -495,6 +493,7 @@ class Editor:
                     self.cmd.show_eagle = False
                     self._team_menu()
                 elif resp == 3:
+                    self.category_header = 'TILE'
                     self._tile_menu()
                 else:  # Exit
                     return True
