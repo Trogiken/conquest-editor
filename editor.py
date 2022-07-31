@@ -301,159 +301,83 @@ class Save:
             raise 'Invalid Category ID'
 
 
-def main(s, c):
-    """Program Loop"""
-    save = s
-    cmd = c
-    cmd.data = save.load()
+class Editor:
+    def __init__(self, save, terminal):
+        self.save = save
+        self.cmd = terminal
 
-    main_header = 'MAIN'
+        self.main_header = 'MAIN'
+        self.team_header = ''
+        self.category_header = ''
 
-    while True:
-        cmd.show_raven = True
-        cmd.show_eagle = True
-        cmd.refresh()
-        cmd.print(f"[{main_header}]", t=2)
-        cmd.print("Eagle : 1")
-        cmd.print("Raven : 2")
-        cmd.print("Exit  : 0")
-
-        try:
-            resp = int(cmd.q_print('', space_above=0))
-        except ValueError:
-            continue
-
-        if resp in [1, 2, 0]:
-            if resp == 1:
-                team_header = 'EAGLE'
-                team = 'e'
-                cmd.show_raven = False
-            elif resp == 2:
-                team_header = 'RAVEN'
-                team = 'r'
-                cmd.show_eagle = False
-            else:
-                return True
-        else:
-            continue
-
+    def _team_menu(self):
         while True:
-            cmd.refresh()
-            cmd.print(f"[{main_header}/{team_header}]", t=2)
-            cmd.print("Resource  : 1")
-            cmd.print("Tile      : 2")
-            cmd.print("Tech      : 3")
-            cmd.print("Back      : 0")
+            self.cmd.refresh()
+            self.cmd.print(f"[{self.main_header}/{self.team_header}]", t=2)
+            self.cmd.print("Resource  : 1")
+            self.cmd.print("Tech      : 2")
+            self.cmd.print("Back      : 0")
 
             try:
-                resp = int(cmd.q_print('', space_above=0))
+                resp = int(self.cmd.q_print('', space_above=0))
             except ValueError:
                 continue
 
-            if resp in [1, 2, 3, 0]:
+            if resp in [1, 2, 0]:
                 if resp == 1:
-                    category_header = 'RESOURCE'
+                    self.category_header = 'RESOURCE'
                     while True:
-                        cmd.refresh(tile_data=False, tech_data=False)
-                        cmd.print(f"[{main_header}/{team_header}/{category_header}]", t=2)
-                        cmd.print("Coins    : 1")
-                        cmd.print("Research : 2")
-                        cmd.print("Back     : 0")
+                        self.cmd.refresh(tile_data=False, tech_data=False)
+                        self.cmd.print(f"[{self.main_header}/{self.team_header}/{self.category_header}]", t=2)
+                        self.cmd.print("Coins    : 1")
+                        self.cmd.print("Research : 2")
+                        self.cmd.print("Back     : 0")
 
                         try:
-                            opt = int(cmd.q_print('', space_above=0))
+                            opt = int(self.cmd.q_print('', space_above=0))
                         except ValueError:
                             continue
 
                         if opt in [1, 2, 0]:
                             if opt == 1:
+                                t = 'COINS'
                                 s = 'Amount of Coins'
-                                v = f'{team}c_coins'
+                                v = f'{self.team_header[0].lower()}c_coins'  # DEBUG
                             elif opt == 2:
+                                t = 'RESEARCH'
                                 s = 'Amount of Research'
-                                v = f'{team}c_research'
+                                v = f'{self.team_header[0].lower()}c_research'  # DEBUG
                             else:
                                 break
                         else:
                             continue
 
                         while True:
-                            cmd.refresh(tile_data=False, tech_data=False)
+                            self.cmd.refresh(tile_data=False, tech_data=False)
+                            self.cmd.print(f"[{self.main_header}/{self.team_header}/{self.category_header}/{t}]", t=2)
                             try:
-                                num = int(cmd.q_print(s + ' | Back: 0', space_above=0))
+                                num = int(self.cmd.q_print(s + ' | Back: 0', space_above=0))
                             except ValueError:
                                 continue
                             if num != 0:
-                                save.update(1, v, num)
-                                cmd.data = save.load()
+                                self.save.update(1, v, num)
+                                self.cmd.data = self.save.load()
                                 break
                             else:
                                 break
-                elif resp == 2:  # Rework: Move tile menu to MAIN menu
-                    category_header = 'TILE'
+                elif resp == 2:
+                    self.category_header = 'TECH'
                     while True:
-                        cmd.refresh(team_data=False, tech_data=False)
-                        cmd.print(f"[{main_header}/{team_header}/{category_header}]", t=2)
-                        cmd.print("Ownership    : 1")
-                        cmd.print("Battalions   : 2")
-                        cmd.print("Back         : 0")
+                        self.cmd.refresh(team_data=False, tile_data=False)
+                        self.cmd.print(f"[{self.main_header}/{self.team_header}/{self.category_header}]", t=2)
+                        self.cmd.print("Add        : 1")
+                        self.cmd.print("Del        : 2")
+                        self.cmd.print("Add All    : 3")
+                        self.cmd.print("Remove All : 4")
+                        self.cmd.print("Back       : 0")
 
                         try:
-                            opt = int(cmd.q_print('', space_above=0))
-                        except ValueError:
-                            continue
-
-                        if opt in [1, 2, 0]:
-                            if opt == 1:
-                                tile_names = []
-                                for c in save.dom.findall('levels/LevelState'):
-                                    name = c.find('objectName').text
-                                    tile_names.append(name)
-                                while True:
-                                    cmd.refresh(team_data=False, tech_data=False)
-                                    tile_name = cmd.q_print('Name of tile you want to edit | Back : 0', space_above=0)
-                                    if tile_name != '0':
-                                        if tile_name not in tile_names:
-                                            continue
-                                    else:
-                                        break
-                                    while True:
-                                        cmd.refresh(team_data=False, tech_data=False)
-                                        try:
-                                            owner = int(cmd.q_print('Eagle=1, Raven=2, None=-1 | Back : 0', space_above=0))
-                                        except ValueError:
-                                            continue
-
-                                        if owner != 0:
-                                            if owner == 1:
-                                                owner = 0
-                                            elif owner == 2:
-                                                owner = 1
-                                            if owner in [0, 1, -1]:
-                                                save.update(0, tile_name, owner)
-                                                cmd.data = save.load()
-                                                break
-                                            else:
-                                                continue
-                                        else:
-                                            break
-                            elif opt == 2:
-                                pass
-                            else:
-                                break
-                elif resp == 3:
-                    category_header = 'TECH'
-                    while True:
-                        cmd.refresh(team_data=False, tile_data=False)
-                        cmd.print(f"[{main_header}/{team_header}/{category_header}]", t=2)
-                        cmd.print("Add        : 1")
-                        cmd.print("Del        : 2")
-                        cmd.print("Add All    : 3")
-                        cmd.print("Remove All : 4")
-                        cmd.print("Back       : 0")
-
-                        try:
-                            opt = int(cmd.q_print('', space_above=0))
+                            opt = int(self.cmd.q_print('', space_above=0))
                         except ValueError:
                             continue
 
@@ -468,16 +392,106 @@ def main(s, c):
                                 pass
                             else:
                                 break
-                else:
+                else:  # End of menu
                     break
+            else:
+                continue
+
+    def _tile_menu(self):
+        self.category_header = 'TILE'
+        while True:
+            self.cmd.refresh(team_data=False, tech_data=False)
+            self.cmd.print(f"[{self.main_header}/{self.category_header}]", t=2)
+            self.cmd.print("Ownership    : 1")
+            self.cmd.print("Battalions   : 2")
+            self.cmd.print("Back         : 0")
+
+            try:
+                opt = int(self.cmd.q_print('', space_above=0))
+            except ValueError:
+                continue
+
+            if opt in [1, 2, 0]:
+                if opt == 1:
+                    tile_names = []
+                    for c in self.save.dom.findall('levels/LevelState'):
+                        name = c.find('objectName').text
+                        tile_names.append(name)
+                    while True:
+                        self.cmd.refresh(team_data=False, tech_data=False)
+                        self.cmd.print(f"[{self.main_header}/{self.category_header}/Ownership]", t=2)
+                        tile_name = self.cmd.q_print('Name of tile you want to edit | Back : 0', space_above=0)
+                        if tile_name != '0':
+                            if tile_name not in tile_names:
+                                continue
+                        else:
+                            break
+                        while True:
+                            self.cmd.refresh(team_data=False, tech_data=False)
+                            self.cmd.print(f"[{self.main_header}/{self.category_header}/Ownership]", t=2)
+                            try:
+                                owner = int(self.cmd.q_print('Eagle=1, Raven=2, None=-1 | Back : 0', space_above=0))
+                            except ValueError:
+                                continue
+
+                            if owner != 0:
+                                if owner == 1:
+                                    owner = 0
+                                elif owner == 2:
+                                    owner = 1
+                                if owner in [0, 1, -1]:
+                                    self.save.update(0, tile_name, owner)
+                                    self.cmd.data = self.save.load()
+                                    break
+                                else:
+                                    continue
+                            else:
+                                break
+                elif opt == 2:
+                    pass
+                else:  # End of menu
+                    break
+            else:
+                continue
+
+    def run(self):
+        """Program Loop"""
+        while True:
+            self.cmd.data = self.save.load()
+            self.cmd.show_raven = True
+            self.cmd.show_eagle = True
+            self.cmd.refresh()
+            self.cmd.print(f"[{self.main_header}]", t=2)
+            self.cmd.print("Eagle : 1")
+            self.cmd.print("Raven : 2")
+            self.cmd.print("Tile  : 3")
+            self.cmd.print("Exit  : 0")
+
+            try:
+                resp = int(self.cmd.q_print('', space_above=0))
+            except ValueError:
+                continue
+
+            if resp in [1, 2, 3, 0]:
+                if resp == 1:
+                    self.team_header = 'EAGLE'
+                    self.cmd.show_raven = False
+                    self._team_menu()
+                elif resp == 2:
+                    self.team_header = 'RAVEN'
+                    self.cmd.show_eagle = False
+                    self._team_menu()
+                elif resp == 3:
+                    self._tile_menu()
+                else:  # Exit
+                    return True
             else:
                 continue
 
 
 if __name__ == '__main__':
-    Save = Save()
-    Terminal = Terminal()
-    z = main(s=Save, c=Terminal)
+    editor = Editor(save=Save(), terminal=Terminal())
+    z = editor.run()
     if z:  # if program exited naturally
         Terminal.clear()
         print("Goodbye...")
