@@ -120,7 +120,7 @@ class Terminal:
         team_data : bool
             display team data
         tech_data : bool
-            display tech data; (team) must be True to display
+            display tech data
         """
         self.clear()
         print(r"""
@@ -171,7 +171,6 @@ class Terminal:
 
 class Save:
     """Manage xml file"""
-
     def __init__(self):
         """Constructs all necessary attributes for the Save object"""
         self.cmd = Terminal()
