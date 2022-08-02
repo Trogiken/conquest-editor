@@ -19,7 +19,6 @@ class Terminal:
     show_raven : bool
         display raven team data
     """
-
     def __init__(self):
         """Constructs all necessary attributes for the Save object"""
         self.data = None
@@ -263,26 +262,22 @@ class Save:
         else:
             raise 'Invalid Tag'
 
-    def resource_update(self, variable, value):
-        if variable in ['eg_coins', 'eg_research', 'ec_coins', 'ec_research', 'rg_coins', 'rg_research', 'rc_coins', 'rc_research']:
+    def resource_update(self, team, variable, value):
+        if variable in ['c_coins', 'c_research']:
             iteration = 1
             for n in self.dom.iter('int'):
-                if iteration == 1 and variable == 'eg_coins':
-                    n.text = str(int(value))
-                elif iteration == 2 and variable == 'eg_research':
-                    n.text = str(int(value))
-                elif iteration == 17 and variable == 'ec_coins':
-                    n.text = str(int(value))
-                elif iteration == 18 and variable == 'ec_research':
-                    n.text = str(int(value))
-                elif iteration == 33 and variable == 'rg_coins':
-                    n.text = str(int(value))
-                elif iteration == 34 and variable == 'rg_research':
-                    n.text = str(int(value))
-                elif iteration == 49 and variable == 'rc_coins':
-                    n.text = str(int(value))
-                elif iteration == 50 and variable == 'rc_research':
-                    n.text = str(int(value))
+                if team == 0:
+                    if iteration == 17 and variable == 'c_coins':
+                        n.text = str(int(value))
+                    elif iteration == 18 and variable == 'c_research':
+                        n.text = str(int(value))
+                elif team == 1:
+                    if iteration == 49 and variable == 'c_coins':
+                        n.text = str(int(value))
+                    elif iteration == 50 and variable == 'c_research':
+                        n.text = str(int(value))
+                else:
+                    raise 'Invalid Team'
                 iteration += 1
             self.dom.write(self.save)
         else:
@@ -310,6 +305,7 @@ class Editor:
 
         self.main_header = 'MAIN'
         self.team_header = ''
+        self.selected_team = ''
         self.category_header = ''
 
     def _team_menu(self):
@@ -345,11 +341,11 @@ class Editor:
                             if opt == 1:
                                 t = 'COINS'
                                 s = 'Amount of Coins'
-                                v = f'{self.team_header[0].lower()}c_coins'
+                                v = 'c_coins'
                             elif opt == 2:
                                 t = 'RESEARCH'
                                 s = 'Amount of Research'
-                                v = f'{self.team_header[0].lower()}c_research'
+                                v = 'c_research'
                             else:
                                 break
                         else:
@@ -363,7 +359,7 @@ class Editor:
                             except ValueError:
                                 continue
                             if num != 0:
-                                self.save.resource_update(v, num)
+                                self.save.resource_update(self.selected_team, v, num)
                                 self.cmd.data = self.save.load()
                                 break
                             else:
@@ -487,14 +483,17 @@ class Editor:
             if resp in [1, 2, 3, 0]:
                 if resp == 1:
                     self.team_header = 'EAGLE'
+                    self.selected_team = 0
                     self.cmd.show_raven = False
                     self._team_menu()
                 elif resp == 2:
                     self.team_header = 'RAVEN'
+                    self.selected_team = 1
                     self.cmd.show_eagle = False
                     self._team_menu()
                 elif resp == 3:
                     self.category_header = 'TILE'
+                    self.selected_team = None
                     self._tile_menu()
                 else:  # Exit
                     return True
